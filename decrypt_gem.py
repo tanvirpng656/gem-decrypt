@@ -55,19 +55,11 @@ def decrypt_one(gem_path, output_path):
             blk = int.from_bytes(dec[off:off + 16], 'big')
             dec[off:off + 16] = (blk ^ cp ^ iv_int).to_bytes(16, 'big')
 
-        # Trim trailing padding
-        pos = 0
-        while pos < len(dec) - 8:
-            sz = struct.unpack('>I', dec[pos:pos + 4])[0]
-            if sz < 8 or sz > len(dec) - pos:
-                break
-            try:
-                dec[pos + 4:pos + 8].decode('ascii')
-            except:
-                break
-            pos += sz
-        if pos > 0:
-            dec = dec[:pos]
+        # Trim trailing padding (disabled for testing)
+# pos = 0
+# ...
+# if pos > 0:
+#     dec = dec[:pos]
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
@@ -79,7 +71,7 @@ def decrypt_one(gem_path, output_path):
             r = subprocess.run(
                 ['ffmpeg', '-y', '-v', 'error', '-i', raw,
                  '-c', 'copy', '-movflags', '+faststart', output_path],
-                capture_output=True, timeout=120
+                capture_output=True, timeout=4000
             )
             if os.path.exists(raw):
                 os.remove(raw)
